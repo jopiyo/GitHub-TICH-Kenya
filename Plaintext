@@ -1,0 +1,10 @@
+# Data & Models
+data/raw/*
+models/*.pkl
+!models/metadata.json
+
+# Environments & Dependencies
+.env
+__pycache__/
+node_modules/
+venv/
