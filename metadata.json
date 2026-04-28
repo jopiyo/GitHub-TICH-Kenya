@@ -1,0 +1,14 @@
+{
+  "model_name": "ClimateGuard-Outbreak-Predictor",
+  "version": "1.0.4",
+  "last_trained": "2026-04-28",
+  "algorithm": "RandomForestClassifier",
+  "accuracy_score": 0.89,
+  "features_used": [
+    "daily_precipitation_mm",
+    "mean_surface_temp",
+    "relative_humidity",
+    "historical_baseline_variance"
+  ],
+  "training_data_range": "2015-2025"
+}
