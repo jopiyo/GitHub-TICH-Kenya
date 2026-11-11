@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimateGuard Executive Dashboard | Public Health & Climate Intelligence</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .pulse-red {
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20 text-emerald-400">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+                        ClimateGuard <span class="text-xs font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Till Africa POS</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Climate-Driven Predictive Health Intelligence Platform</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-2 text-xs bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-full">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-slate-300 font-medium">Lake Victoria Basin Surveillance Zone</span>
+                </div>
+                <button onclick="resetToDefaults()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Preset Controls Bar & Alert Notification Banner -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            
+            <!-- Quick Preset Selector -->
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs uppercase font-semibold tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="sliders" class="w-3.5 h-3.5 text-sky-400"></i> Climate Presets
+                        </span>
+                        <span class="text-xs text-slate-400">Quick Scenarios</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <button onclick="applyPreset('el_nino')" class="text-xs py-2 px-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-lg text-center font-medium transition">
+                            🌧️ El Niño Deluge
+                        </button>
+                        <button onclick="applyPreset('heatwave')" class="text-xs py-2 px-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg text-center font-medium transition">
+                            ☀️ Dry Heatwave
+                        </button>
+                        <button onclick="applyPreset('normal')" class="text-xs py-2 px-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg text-center font-medium transition">
+                            🌿 Normal Season
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Region & Location Target -->
+            <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs uppercase font-semibold tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400"></i> Active Region Focal Point
+                    </span>
+                    <span class="text-xs text-slate-400">Sub-County Node</span>
+                </div>
+                <select id="regionSelect" onchange="updateSimulation()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <option value="Mageta Island / Siaya">Mageta Island (Siaya County - High Flood Risk)</option>
+                    <option value="Kisumu West Sub-County">Kisumu West (Nyakach / Lower Basin)</option>
+                    <option value="Homabay Town / Bay Area">Homabay Town (Bay Area / Coastal Basin)</option>
+                    <option value="Budalangi Flood Plain">Budalangi (Busia Basin Flood Plain)</option>
+                </select>
+            </div>
+
+            <!-- Live Status Summary Banner -->
+            <div id="statusBannerBox" class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between transition-all duration-300">
+                <div class="space-y-1">
+                    <span class="text-xs uppercase font-semibold tracking-wider text-slate-400">System Risk Status</span>
+                    <div id="statusTitle" class="text-lg font-bold text-slate-100">Calculating...</div>
+                    <p id="statusDesc" class="text-xs text-slate-400">Simulating threshold parameters...</p>
+                </div>
+                <div id="statusBadgeContainer">
+                    <!-- Dynamic status badge injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid: Controls & KPIs -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            <!-- Left Panel: Interactive Parameter Sliders (1 Col) -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-6 flex flex-col justify-between">
+                <div>
+                    <h2 class="font-semibold text-slate-100 border-b border-slate-700/80 pb-3 mb-5 flex items-center gap-2">
+                        <i data-lucide="sliders-horizontal" class="w-4 h-4 text-emerald-400"></i> Simulation Controls
+                    </h2>
+
+                    <!-- Rainfall Slider -->
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between items-center text-sm">
+                            <label for="rainfallInput" class="text-slate-300 font-medium flex items-center gap-2">
+                                <i data-lucide="cloud-rain" class="w-4 h-4 text-sky-400"></i> Rainfall (30-day Cumulative)
+                            </label>
+                            <span class="font-bold text-sky-400 bg-sky-950/60 px-2.5 py-0.5 rounded border border-sky-800/50 text-xs" id="rainfallVal">210 mm</span>
+                        </div>
+                        <input type="range" id="rainfallInput" min="20" max="400" value="210" step="5" oninput="updateSimulation()" class="w-full accent-sky-400 bg-slate-900 rounded-lg h-2 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>20mm (Dry)</span>
+                            <span>150mm (Threshold)</span>
+                            <span>400mm (Deluge)</span>
+                        </div>
+                    </div>
+
+                    <!-- Temperature Slider -->
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between items-center text-sm">
+                            <label for="tempInput" class="text-slate-300 font-medium flex items-center gap-2">
+                                <i data-lucide="thermometer" class="w-4 h-4 text-amber-400"></i> Avg Temperature
+                            </label>
+                            <span class="font-bold text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded border border-amber-800/50 text-xs" id="tempVal">27.5 °C</span>
+                        </div>
+                        <input type="range" id="tempInput" min="18" max="38" value="27.5" step="0.5" oninput="updateSimulation()" class="w-full accent-amber-400 bg-slate-900 rounded-lg h-2 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>18°C</span>
+                            <span>25°C (Vector Threshold)</span>
+                            <span>38°C</span>
+                        </div>
+                    </div>
+
+                    <!-- Health Facility Capacity Slider -->
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between items-center text-sm">
+                            <label for="capacityInput" class="text-slate-300 font-medium flex items-center gap-2">
+                                <i data-lucide="hospital" class="w-4 h-4 text-emerald-400"></i> Health Facility Capacity
+                            </label>
+                            <span class="font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded border border-emerald-800/50 text-xs" id="capacityVal">Level 2 / 5</span>
+                        </div>
+                        <input type="range" id="capacityInput" min="1" max="5" value="2" step="1" oninput="updateSimulation()" class="w-full accent-emerald-400 bg-slate-900 rounded-lg h-2 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>1 (Severe Deficit)</span>
+                            <span>3 (Moderate)</span>
+                            <span>5 (Optimal)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-xs text-slate-400 space-y-1">
+                    <p class="font-medium text-slate-300 flex items-center gap-1">
+                        <i data-lucide="info" class="w-3.5 h-3.5 text-sky-400"></i> Surveillance Logic
+                    </p>
+                    <p>Correlates environmental telemetry against historical epidemiological outbreaks across Lake Victoria catchments.</p>
+                </div>
+            </div>
+
+            <!-- Right Area: Key KPI Cards & Main Dynamic Analytics Charts (3 Cols) -->
+            <div class="lg:col-span-3 space-y-6">
+
+                <!-- 4 Top KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <!-- KPI 1: Vulnerability Index -->
+                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 space-y-2">
+                        <div class="flex justify-between items-center text-slate-400 text-xs font-medium">
+                            <span>Vulnerability Index</span>
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>
+                        </div>
+                        <div id="kpiVulnerabilityText" class="text-xl font-bold text-rose-400">
+                            CRITICAL HOTSPOT
+                        </div>
+                        <p class="text-[11px] text-slate-400">Climate risk vs Local Health buffer</p>
+                    </div>
+
+                    <!-- KPI 2: Highest Disease Threat -->
+                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 space-y-2">
+                        <div class="flex justify-between items-center text-slate-400 text-xs font-medium">
+                            <span>Primary Pathogen Risk</span>
+                            <i data-lucide="activity" class="w-4 h-4 text-amber-400"></i>
+                        </div>
+                        <div id="kpiPrimaryRisk" class="text-xl font-bold text-amber-300">
+                            Cholera (92%)
+                        </div>
+                        <p class="text-[11px] text-slate-400">Based on rainfall run-off model</p>
+                    </div>
+
+                    <!-- KPI 3: Targeted CHVs / CHPs -->
+                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 space-y-2">
+                        <div class="flex justify-between items-center text-slate-400 text-xs font-medium">
+                            <span>EWS Dispatch Reach</span>
+                            <i data-lucide="send" class="w-4 h-4 text-sky-400"></i>
+                        </div>
+                        <div id="kpiChvReach" class="text-xl font-bold text-sky-300">
+                            148 CHVs Alerted
+                        </div>
+                        <p class="text-[11px] text-slate-400">USSD & SMS Gateway active</p>
+                    </div>
+
+                    <!-- KPI 4: Supply Readiness Status -->
+                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 space-y-2">
+                        <div class="flex justify-between items-center text-slate-400 text-xs font-medium">
+                            <span>Medical Prepositioning</span>
+                            <i data-lucide="package-check" class="w-4 h-4 text-emerald-400"></i>
+                        </div>
+                        <div id="kpiSupplyStatus" class="text-xl font-bold text-emerald-300">
+                            Action Required
+                        </div>
+                        <p class="text-[11px] text-slate-400">ACTs & Aquatabs buffer dispatch</p>
+                    </div>
+                </div>
+
+                <!-- Charts Section: Line Trend & Vulnerability Breakdown -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- 7-Day Outbreak Trend Forecast (2 Cols) -->
+                    <div class="md:col-span-2 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-semibold text-slate-100 flex items-center gap-2">
+                                    <i data-lucide="trending-up" class="w-4 h-4 text-sky-400"></i> 7-Day Outbreak Projection Model
+                                </h3>
+                                <p class="text-xs text-slate-400">Simulated epidemiological trajectory for Malaria, Cholera & Dengue</p>
+                            </div>
+                            <span class="text-xs font-medium px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-slate-300">
+                                Real-time Forecast
+                            </span>
+                        </div>
+                        <div class="h-64 w-full">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Disease Risk Breakdown Doughnut / Radar (1 Col) -->
+                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between">
+                        <div class="mb-4">
+                            <h3 class="font-semibold text-slate-100 flex items-center gap-2">
+                                <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i> Risk Burden Matrix
+                            </h3>
+                            <p class="text-xs text-slate-400">Current pathogen risk distribution</p>
+                        </div>
+                        <div class="h-56 w-full flex items-center justify-center">
+                            <canvas id="riskRadarChart"></canvas>
+                        </div>
+                        <div id="diseaseLegend" class="grid grid-cols-3 text-center text-xs gap-1 pt-2 border-t border-slate-700/50">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Lower Panel: EWS Logs & Recommended Interventions -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- EWS Simulated Alert Logs -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center border-b border-slate-700/80 pb-3 mb-4">
+                        <h3 class="font-semibold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="message-square" class="w-4 h-4 text-sky-400"></i> Early Warning System (EWS) Live Gateway Feed
+                        </h3>
+                        <span class="text-[11px] font-mono px-2 py-0.5 bg-sky-950 text-sky-300 border border-sky-800/60 rounded">
+                            USSD/SMS Active
+                        </span>
+                    </div>
+
+                    <div id="ewsLogContainer" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                        <!-- Simulated Log items injected by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prepositioning & Resource Optimization Calculator -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center border-b border-slate-700/80 pb-3 mb-4">
+                        <h3 class="font-semibold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="truck" class="w-4 h-4 text-emerald-400"></i> Resource Optimization & Prepositioning
+                        </h3>
+                        <span class="text-xs text-slate-400">Automated Logistics Plan</span>
+                    </div>
+
+                    <div id="resourceRecommendationsList" class="space-y-3">
+                        <!-- Prepositioning list injected by JS -->
+                    </div>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-slate-700/50 flex justify-between items-center text-xs text-slate-400">
+                    <span>Generated by Till Africa POS Decision Engine</span>
+                    <button onclick="triggerDispatchToast()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition flex items-center gap-1.5">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i> Authorize Logistics Order
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Success Toast Notification -->
+    <div id="dispatchToast" class="fixed bottom-6 right-6 hidden bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl border border-emerald-400 flex items-center gap-3 z-50">
+        <i data-lucide="check-circle-2" class="w-5 h-5 text-white"></i>
+        <div>
+            <h4 class="font-bold text-sm">Logistics Order Dispatched!</h4>
+            <p class="text-xs text-emerald-100">Stock prepositioning request logged with Regional Supply Depot.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Simulation Engine & Charting Logic -->
+    <script>
+        let trendChartInstance = null;
+        let riskRadarChartInstance = null;
+
+        // Initialize icons & setup on load
+        window.onload = function() {
+            lucide.createIcons();
+            initCharts();
+            updateSimulation();
+        };
+
+        // Presets handler
+        function applyPreset(preset) {
+            const rainfallInput = document.getElementById('rainfallInput');
+            const tempInput = document.getElementById('tempInput');
+            const capacityInput = document.getElementById('capacityInput');
+
+            if (preset === 'el_nino') {
+                rainfallInput.value = 260;
+                tempInput.value = 28.5;
+                capacityInput.value = 2;
+            } else if (preset === 'heatwave') {
+                rainfallInput.value = 110;
+                tempInput.value = 33.0;
+                capacityInput.value = 3;
+            } else if (preset === 'normal') {
+                rainfallInput.value = 65;
+                tempInput.value = 23.5;
+                capacityInput.value = 4;
+            }
+            updateSimulation();
+        }
+
+        function resetToDefaults() {
+            document.getElementById('rainfallInput').value = 210;
+            document.getElementById('tempInput').value = 27.5;
+            document.getElementById('capacityInput').value = 2;
+            document.getElementById('regionSelect').selectedIndex = 0;
+            updateSimulation();
+        }
+
+        // Core Calculation Engine
+        function updateSimulation() {
+            const rainfall = parseFloat(document.getElementById('rainfallInput').value);
+            const temp = parseFloat(document.getElementById('tempInput').value);
+            const capacity = parseInt(document.getElementById('capacityInput').value);
+            const region = document.getElementById('regionSelect').value;
+
+            // UI Label updates
+            document.getElementById('rainfallVal').innerText = rainfall + ' mm';
+            document.getElementById('tempVal').innerText = temp + ' °C';
+            document.getElementById('capacityVal').innerText = 'Level ' + capacity + ' / 5';
+
+            // Risk Algorithms
+            let malariaScore = 30;
+            if (rainfall > 150 && temp > 24) {
+                malariaScore = Math.min(98, Math.round(40 + (rainfall * 0.12) + (temp * 1.5)));
+            } else if (rainfall > 100 || temp > 25) {
+                malariaScore = Math.min(75, Math.round(25 + (rainfall * 0.1) + (temp * 0.8)));
+            }
+
+            let choleraScore = 15;
+            if (rainfall > 200) {
+                choleraScore = Math.min(99, Math.round(50 + (rainfall * 0.18)));
+            } else if (rainfall > 100) {
+                choleraScore = Math.min(70, Math.round(20 + (rainfall * 0.25)));
+            }
+
+            let dengueScore = 20;
+            if (temp > 26 && rainfall > 120) {
+                dengueScore = Math.min(95, Math.round(30 + (temp * 1.4) + (rainfall * 0.08)));
+            }
+
+            const maxScore = Math.max(malariaScore, choleraScore, dengueScore);
+            const isHotspot = (maxScore > 70 && capacity <= 2);
+
+            // Update Status Banner & KPI Badges
+            const statusBannerBox = document.getElementById('statusBannerBox');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDesc = document.getElementById('statusDesc');
+            const statusBadgeContainer = document.getElementById('statusBadgeContainer');
+            const kpiVulnerabilityText = document.getElementById('kpiVulnerabilityText');
+
+            if (isHotspot) {
+                statusBannerBox.className = "bg-rose-950/40 border border-rose-600/60 rounded-xl p-4 flex items-center justify-between pulse-red transition-all duration-300";
+                statusTitle.innerText = "CRITICAL HOTSPOT ALERT";
+                statusTitle.className = "text-lg font-bold text-rose-400";
+                statusDesc.innerText = "High climate threat severity intersecting low facility coping capacity (" + capacity + "/5).";
+                statusBadgeContainer.innerHTML = `<span class="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs rounded-lg shadow uppercase tracking-wider">CRITICAL HOTSPOT</span>`;
+                
+                kpiVulnerabilityText.innerText = "CRITICAL HOTSPOT";
+                kpiVulnerabilityText.className = "text-xl font-bold text-rose-500 animate-pulse";
+            } else if (maxScore > 60) {
+                statusBannerBox.className = "bg-amber-950/30 border border-amber-600/50 rounded-xl p-4 flex items-center justify-between transition-all duration-300";
+                statusTitle.innerText = "ELEVATED RISK ZONE";
+                statusTitle.className = "text-lg font-bold text-amber-400";
+                statusDesc.innerText = "Moderate-to-high risk recorded. Health facility buffer remains functional.";
+                statusBadgeContainer.innerHTML = `<span class="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold text-xs rounded-lg">MODERATE RISK</span>`;
+                
+                kpiVulnerabilityText.innerText = "MODERATE RISK";
+                kpiVulnerabilityText.className = "text-xl font-bold text-amber-400";
+            } else {
+                statusBannerBox.className = "bg-emerald-950/30 border border-emerald-600/40 rounded-xl p-4 flex items-center justify-between transition-all duration-300";
+                statusTitle.innerText = "STABLE SURVEILLANCE";
+                statusTitle.className = "text-lg font-bold text-emerald-400";
+                statusDesc.innerText = "Environmental indicators within manageable health capacity levels.";
+                statusBadgeContainer.innerHTML = `<span class="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold text-xs rounded-lg">STABLE</span>`;
+                
+                kpiVulnerabilityText.innerText = "STABLE";
+                kpiVulnerabilityText.className = "text-xl font-bold text-emerald-400";
+            }
+
+            let topDisease = "Malaria";
+            let topVal = malariaScore;
+            if (choleraScore > topVal) { topDisease = "Cholera"; topVal = choleraScore; }
+            if (dengueScore > topVal) { topDisease = "Dengue"; topVal = dengueScore; }
+
+            document.getElementById('kpiPrimaryRisk').innerText = `${topDisease} (${topVal}%)`;
+
+            const chvBase = 120 + Math.round((rainfall / 400) * 80);
+            document.getElementById('kpiChvReach').innerText = `${chvBase} CHVs / CHPs`;
+
+            if (topVal > 70) {
+                document.getElementById('kpiSupplyStatus').innerText = "Emergency Preposition";
+                document.getElementById('kpiSupplyStatus').className = "text-xl font-bold text-rose-400";
+            } else {
+                document.getElementById('kpiSupplyStatus').innerText = "Standard Buffer";
+                document.getElementById('kpiSupplyStatus').className = "text-xl font-bold text-emerald-400";
+            }
+
+            updateEWSLogs(region, malariaScore, choleraScore, dengueScore, rainfall, temp);
+            updateResourceRecommendations(malariaScore, choleraScore, dengueScore);
+            updateCharts(malariaScore, choleraScore, dengueScore);
+        }
+
+        function updateEWSLogs(region, malaria, cholera, dengue, rain, temp) {
+            const container = document.getElementById('ewsLogContainer');
+            container.innerHTML = '';
+
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const alerts = [];
+            if (cholera >= 70) {
+                alerts.push({
+                    type: 'CRITICAL',
+                    disease: 'Cholera',
+                    score: cholera,
+                    msg: `URGENT: Flooding threshold breached (${rain}mm). Cholera risk at ${cholera}%. Initiate water sampling & distribute Aquatabs.`
+                });
+            }
+            if (malaria >= 70) {
+                alerts.push({
+                    type: 'HIGH',
+                    disease: 'Malaria',
+                    score: malaria,
+                    msg: `ALERT: Vector breeding index elevated (${temp}°C, ${rain}mm). Malaria risk at ${malaria}%. Mobilize CHVs for net checks.`
+                });
+            }
+            if (dengue >= 70) {
+                alerts.push({
+                    type: 'HIGH',
+                    disease: 'Dengue',
+                    score: dengue,
+                    msg: `WARNING: Dengue climate vector score ${dengue}%. Inspect stagnant container sites.`
+                });
+            }
+
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="p-3 bg-slate-900/40 border border-slate-700/40 rounded-xl text-xs text-slate-400 flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                        <span>No emergency USSD/SMS alerts triggered. All environmental parameters remain in nominal range.</span>
+                    </div>
+                `;
+            } else {
+                alerts.forEach(alert => {
+                    const badgeClass = alert.type === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+                    const borderClass = alert.type === 'CRITICAL' ? 'border-rose-500/50 bg-rose-950/20' : 'border-amber-500/50 bg-amber-950/20';
+
+                    container.innerHTML += `
+                        <div class="p-3 border ${borderClass} rounded-xl text-xs space-y-1.5 transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full ${alert.type === 'CRITICAL' ? 'bg-rose-500 animate-ping' : 'bg-amber-400'}"></span>
+                                    ${alert.disease} Warning Dispatch
+                                </span>
+                                <span class="text-[10px] font-mono ${badgeClass} px-2 py-0.5 rounded border">
+                                    ${timestamp} • Sent via USSD Gateway
+                                </span>
+                            </div>
+                            <p class="text-slate-300 font-mono text-[11px] leading-relaxed">"${alert.msg}"</p>
+                            <div class="text-[10px] text-slate-400 flex justify-between pt-1">
+                                <span>Target: CHVs & Facility Leads (${region})</span>
+                                <span class="text-emerald-400 font-medium">✓ Delivered (100%)</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        }
+
+        function updateResourceRecommendations(malaria, cholera, dengue) {
+            const list = document.getElementById('resourceRecommendationsList');
+            list.innerHTML = '';
+
+            const items = [];
+            if (malaria > 70) {
+                items.push({
+                    title: "Malaria Countermeasures",
+                    detail: "Preposition 500 Artemisinin-based Combination Therapies (ACTs) & 300 LLIN bednets to nearest dispensary.",
+                    icon: "pill",
+                    color: "text-rose-400"
+                });
+            }
+            if (cholera > 70) {
+                items.push({
+                    title: "Cholera & WASH Supplies",
+                    detail: "Dispatch 250 Aquatab water treatment packs, 150 Oral Rehydration Salts (ORS) & chlorine drums.",
+                    icon: "droplet",
+                    color: "text-sky-400"
+                });
+            }
+            if (dengue > 70) {
+                items.push({
+                    title: "Vector Control Larvicides",
+                    detail: "Deploy targeted larvicide kits for standing water treatment in densely populated sub-locations.",
+                    icon: "bug",
+                    color: "text-amber-400"
+                });
+            }
+
+            if (items.length === 0) {
+                list.innerHTML = `
+                    <div class="p-3 bg-slate-900/40 border border-slate-700/40 rounded-xl text-xs text-emerald-400 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Standard facility buffer stock is adequate. No emergency supply prepositioning required.</span>
+                    </div>
+                `;
+            } else {
+                items.forEach(item => {
+                    list.innerHTML += `
+                        <div class="p-3 bg-slate-900/60 border border-slate-700/60 rounded-xl text-xs flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-slate-800 ${item.color} border border-slate-700">
+                                <i data-lucide="${item.icon}" class="w-4 h-4"></i>
+                            </div>
+                            <div class="space-y-0.5">
+                                <h4 class="font-semibold text-slate-200">${item.title}</h4>
+                                <p class="text-slate-400 leading-normal">${item.detail}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        }
+
+        function initCharts() {
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7 (Forecast)'],
+                    datasets: [
+                        {
+                            label: 'Malaria Risk %',
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            data: [40, 45, 55, 60, 75, 80, 85]
+                        },
+                        {
+                            label: 'Cholera Risk %',
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            data: [20, 25, 40, 65, 80, 90, 92]
+                        },
+                        {
+                            label: 'Dengue Risk %',
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            data: [15, 20, 30, 45, 60, 70, 78]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10 } }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            const ctxRadar = document.getElementById('riskRadarChart').getContext('2d');
+            riskRadarChartInstance = new Chart(ctxRadar, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Malaria', 'Cholera', 'Dengue'],
+                    datasets: [{
+                        data: [85, 92, 78],
+                        backgroundColor: ['#ef4444', '#38bdf8', '#f59e0b'],
+                        borderWidth: 2,
+                        borderColor: '#1e293b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function updateCharts(malaria, cholera, dengue) {
+            if (!trendChartInstance || !riskRadarChartInstance) return;
+
+            trendChartInstance.data.datasets[0].data = [
+                Math.max(10, malaria - 30), Math.max(15, malaria - 22), Math.max(20, malaria - 15),
+                Math.max(25, malaria - 10), Math.max(30, malaria - 5), malaria, Math.min(100, malaria + 5)
+            ];
+            trendChartInstance.data.datasets[1].data = [
+                Math.max(5, cholera - 40), Math.max(10, cholera - 30), Math.max(15, cholera - 20),
+                Math.max(25, cholera - 12), Math.max(35, cholera - 6), cholera, Math.min(100, cholera + 4)
+            ];
+            trendChartInstance.data.datasets[2].data = [
+                Math.max(5, dengue - 25), Math.max(10, dengue - 20), Math.max(15, dengue - 15),
+                Math.max(20, dengue - 10), Math.max(25, dengue - 4), dengue, Math.min(100, dengue + 3)
+            ];
+            trendChartInstance.update();
+
+            riskRadarChartInstance.data.datasets[0].data = [malaria, cholera, dengue];
+            riskRadarChartInstance.update();
+
+            document.getElementById('diseaseLegend').innerHTML = `
+                <div><span class="inline-block w-2 h-2 rounded-full bg-rose-500 mr-1"></span><span class="text-slate-300">Malaria: ${malaria}%</span></div>
+                <div><span class="inline-block w-2 h-2 rounded-full bg-sky-400 mr-1"></span><span class="text-slate-300">Cholera: ${cholera}%</span></div>
+                <div><span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span><span class="text-slate-300">Dengue: ${dengue}%</span></div>
+            `;
+        }
+
+        function triggerDispatchToast() {
+            const toast = document.getElementById('dispatchToast');
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 4000);
+        }
+    </script>
+</body>
+</html>
