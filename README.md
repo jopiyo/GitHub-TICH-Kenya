@@ -1,11 +1,11 @@
 # GitHub-TICH-Kenya
-ClimateGuard is a strategic digital initiative by Till Africa POS for the Tropical Institute of Community Health and Development (TICH)
+ClimateGuard is a strategic digital initiative by **Till Africa POS** for the Tropical Institute of Community Health and Development (TICH)
 # ClimateGuard: Strengthening Community Health Resilience
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TICH Project](https://img.shields.io/badge/Organization-TICH--Kenya-blue)](https://tichinafrica.org)
 
-**ClimateGuard** is an open-source digital platform developed by Till Africa POS for the **Tropical Institute of Community Health and Development (TICH)**. It integrates climate intelligence with community-based health surveillance to predict, monitor, and mitigate the health impacts of climate change in underserved regions.
+**ClimateGuard** is an open-source digital platform developed by **Till Africa POS** for the **Tropical Institute of Community Health and Development (TICH)**. It integrates climate intelligence with community-based health surveillance to predict, monitor, and mitigate the health impacts of climate change in underserved regions.
 
 ---
 
